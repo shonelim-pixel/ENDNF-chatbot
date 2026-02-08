@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>END NF 학교폭력 상담 챗봇</title>
+<meta name="description" content="학교폭력 법률상담과 심리상담을 제공하는 AI 챗봇입니다.">
+<meta property="og:title" content="END NF 학교폭력 상담 챗봇">
+<meta property="og:description" content="학교폭력으로 힘드신가요? 법률상담과 심리상담을 무료로 받아보세요.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #E8725A;
+  --primary-light: #FF8C6B;
+  --primary-soft: #FFB088;
+  --bg: #FFF8F3;
+  --bg-chat: #FFFFFF;
+  --bot-bubble: #FFF0E6;
+  --user-bubble: #FF8C6B;
+  --user-text: #FFFFFF;
+  --text-main: #3D2B1F;
+  --text-secondary: #7A6055;
+  --text-light: #A89080;
+  --border: #F0DDD0;
+  --shadow: rgba(232, 114, 90, 0.1);
+  --crisis-bg: #FFF0F0;
+  --crisis-border: #E85A5A;
+  --success: #5AAE6B;
+  --radius: 16px;
+  --radius-sm: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text-main);
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: white;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 12px var(--shadow);
+  z-index: 10;
+  flex-shrink: 0;
+}
+.header-logo {
+  width: 42px; height: 42px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.header-info h1 { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+.header-info p { font-size: 11px; opacity: 0.85; margin-top: 1px; }
+.header-actions { margin-left: auto; display: flex; gap: 8px; }
+.header-btn {
+  background: rgba(255,255,255,0.2);
+  border: none; color: white;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+.header-btn:hover { background: rgba(255,255,255,0.35); }
+
+/* Chat Area */
+.chat-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+.chat-area::-webkit-scrollbar { width: 4px; }
+.chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* Messages */
+.msg-row {
+  display: flex;
+  gap: 8px;
+  max-width: 88%;
+  animation: msgIn 0.3s ease-out;
+}
+.msg-row.user { align-self: flex-end; flex-direction: row-reverse; }
+.msg-row.bot { align-self: flex-start; }
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bot-avatar {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.msg-bubble {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  line-height: 1.65;
+  font-size: 14px;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.bot .msg-bubble {
+  background: var(--bot-bubble);
+  color: var(--text-main);
+  border-bottom-left-radius: 4px;
+}
+.user .msg-bubble {
+  background: var(--user-bubble);
+  color: var(--user-text);
+  border-bottom-right-radius: 4px;
+}
+.msg-bubble strong { color: var(--primary); }
+.user .msg-bubble strong { color: #FFE0C8; }
+.msg-bubble .section-title {
+  font-weight: 700;
+  color: var(--primary);
+  margin: 10px 0 5px 0;
+  font-size: 14px;
+}
+.msg-bubble .section-title:first-child { margin-top: 0; }
+.msg-bubble ul { padding-left: 18px; margin: 4px 0; }
+.msg-bubble li { margin: 3px 0; }
+.msg-bubble .crisis-box {
+  background: var(--crisis-bg);
+  border-left: 3px solid var(--crisis-border);
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin: 8px 0;
+  font-size: 13px;
+}
+.msg-bubble .info-box {
+  background: #F0F7FF;
+  border-left: 3px solid #5A8AE8;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin: 8px 0;
+  font-size: 13px;
+}
+.msg-bubble .law-ref {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+.msg-time {
+  font-size: 10px;
+  color: var(--text-light);
+  align-self: flex-end;
+  flex-shrink: 0;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+  display: none;
+  align-self: flex-start;
+  padding: 12px 16px;
+  background: var(--bot-bubble);
+  border-radius: var(--radius);
+  border-bottom-left-radius: 4px;
+  margin-left: 42px;
+}
+.typing-indicator.active { display: flex; gap: 4px; align-items: center; }
+.typing-dot {
+  width: 7px; height: 7px;
+  background: var(--primary-soft);
+  border-radius: 50%;
+  animation: typingBounce 1.4s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+
+/* Quick Replies */
+.quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 0;
+  margin-left: 42px;
+  animation: msgIn 0.3s ease-out;
+}
+.quick-btn {
+  background: white;
+  border: 1.5px solid var(--primary-soft);
+  color: var(--primary);
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.quick-btn:hover, .quick-btn:active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Input Area */
+.input-area {
+  padding: 12px 16px;
+  background: white;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+.input-wrap {
+  flex: 1;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 24px;
+  display: flex;
+  align-items: flex-end;
+  padding: 4px 4px 4px 16px;
+  transition: border-color 0.2s;
+}
+.input-wrap:focus-within { border-color: var(--primary-soft); }
+#userInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-main);
+  resize: none;
+  max-height: 100px;
+  padding: 8px 0;
+  outline: none;
+  line-height: 1.4;
+}
+#userInput::placeholder { color: var(--text-light); }
+.send-btn {
+  background: var(--primary);
+  border: none;
+  color: white;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  font-size: 18px;
+}
+.send-btn:hover { background: var(--primary-light); transform: scale(1.05); }
+.send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* Settings Modal */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: white;
+  border-radius: var(--radius);
+  max-width: 440px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+.modal-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-header h2 { font-size: 16px; font-weight: 700; }
+.modal-close {
+  background: none; border: none;
+  font-size: 22px; cursor: pointer;
+  color: var(--text-light);
+  padding: 4px;
+}
+.modal-body { padding: 20px; }
+.modal-body label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.modal-body input, .modal-body select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+}
+.modal-body input:focus, .modal-body select:focus { border-color: var(--primary-soft); }
+.modal-body .hint {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: -12px;
+  margin-bottom: 16px;
+}
+.save-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s;
+}
+.save-btn:hover { background: var(--primary-light); }
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+.status-badge.connected { background: #E8F5E9; color: #2E7D32; }
+.status-badge.disconnected { background: #FFF3E0; color: #E65100; }
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.connected .status-dot { background: #4CAF50; }
+.disconnected .status-dot { background: #FF9800; }
+
+/* Welcome Screen */
+.welcome-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 24px;
+  text-align: center;
+}
+.welcome-icon {
+  width: 80px; height: 80px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 38px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 24px var(--shadow);
+}
+.welcome-screen h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+.welcome-screen p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 320px;
+  margin-bottom: 20px;
+}
+.topic-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+  max-width: 360px;
+}
+.topic-card {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.topic-card:hover, .topic-card:active {
+  border-color: var(--primary-soft);
+  background: var(--bot-bubble);
+  transform: translateY(-1px);
+}
+.topic-icon { font-size: 24px; margin-bottom: 6px; }
+.topic-label { font-size: 13px; font-weight: 500; color: var(--text-main); }
+
+/* Footer notice */
+.footer-notice {
+  padding: 6px 16px;
+  background: var(--bg);
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-light);
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+  .header { padding: 12px 14px; }
+  .chat-area { padding: 12px; }
+  .topic-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .topic-card { padding: 10px 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-logo">🛡️</div>
+  <div class="header-info">
+    <h1>END NF 학교폭력 상담 챗봇</h1>
+    <p>법률상담 · 심리상담 · 24시간 함께합니다</p>
+  </div>
+  <div class="header-actions">
+    <button class="header-btn" onclick="openSettings()" title="설정">⚙️</button>
+  </div>
+</div>
+
+<!-- Chat Area -->
+<div class="chat-area" id="chatArea">
+  <!-- Welcome Screen -->
+  <div class="welcome-screen" id="welcomeScreen">
+    <div class="welcome-icon">🛡️</div>
+    <h2>안녕하세요, 여기는 안전한 공간이에요</h2>
+    <p>학교폭력과 관련된 법률 상담, 심리 상담을 도와드립니다.<br>
+    어떤 이야기든 편하게 말씀해 주세요.</p>
+    <div class="topic-grid">
+      <button class="topic-card" onclick="selectTopic('학교폭력이 뭔지 알고 싶어요')">
+        <div class="topic-icon">📖</div>
+        <div class="topic-label">학교폭력이란?</div>
+      </button>
+      <button class="topic-card" onclick="selectTopic('학교폭력을 당하고 있어요. 어떻게 신고하나요?')">
+        <div class="topic-icon">🆘</div>
+        <div class="topic-label">신고·대처 방법</div>
+      </button>
+      <button class="topic-card" onclick="selectTopic('피해학생은 어떤 보호를 받을 수 있나요?')">
+        <div class="topic-icon">🤝</div>
+        <div class="topic-label">피해학생 지원</div>
+      </button>
+      <button class="topic-card" onclick="selectTopic('가해학생에게는 어떤 조치가 내려지나요?')">
+        <div class="topic-icon">⚖️</div>
+        <div class="topic-label">가해학생 조치</div>
+      </button>
+      <button class="topic-card" onclick="selectTopic('너무 힘들고 무서워요')">
+        <div class="topic-icon">💛</div>
+        <div class="topic-label">심리상담 받기</div>
+      </button>
+      <button class="topic-card" onclick="selectTopic('사이버폭력을 당하고 있어요')">
+        <div class="topic-icon">📱</div>
+        <div class="topic-label">사이버폭력</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Typing Indicator -->
+  <div class="typing-indicator" id="typingIndicator">
+    <div class="typing-dot"></div>
+    <div class="typing-dot"></div>
+    <div class="typing-dot"></div>
+  </div>
+</div>
+
+<!-- Input Area -->
+<div class="input-area">
+  <div class="input-wrap">
+    <textarea id="userInput" rows="1" placeholder="궁금한 점을 물어보세요..."
+      onkeydown="handleKeyDown(event)" oninput="autoResize(this)"></textarea>
+  </div>
+  <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+  </button>
+</div>
+
+<div class="footer-notice">
+  ⚠️ 본 챗봇은 참고용이며, 정확한 법률 자문은 전문가와 상담하세요 ｜ 긴급 시 117(학교폭력신고)
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⚙️ AI 설정</h2>
+      <button class="modal-close" onclick="closeSettings()">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="aiStatus"></div>
+      <label>AI 모드</label>
+      <select id="aiMode" onchange="toggleApiFields()">
+        <option value="rule">규칙 기반 (API 키 불필요)</option>
+        <option value="ai">AI 연동 (Claude API)</option>
+      </select>
+      <div id="apiFields" style="display:none;">
+        <label>API 프록시 URL</label>
+        <input type="url" id="apiEndpoint" placeholder="https://your-worker.your-subdomain.workers.dev">
+        <p class="hint">Cloudflare Worker 프록시 URL을 입력하세요. 설정 가이드는 README를 참고하세요.</p>
+        <label>API 키 (프록시를 사용하지 않을 경우)</label>
+        <input type="password" id="apiKey" placeholder="sk-ant-...">
+        <p class="hint">⚠️ API 키 직접 입력은 개인 사용 시에만 권장합니다.</p>
+      </div>
+      <button class="save-btn" onclick="saveSettings()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// END NF 학교폭력 상담 챗봇 - Main Application
+// ============================================================
+
+// --- Configuration ---
+const CONFIG = {
+  mode: localStorage.getItem('endnf_mode') || 'rule',
+  apiEndpoint: localStorage.getItem('endnf_endpoint') || '',
+  apiKey: localStorage.getItem('endnf_apikey') || '',
+  botName: 'END NF',
+  maxHistory: 20
+};
+
+let chatHistory = [];
+let isProcessing = false;
+
+// --- Comprehensive Knowledge Base ---
+const KNOWLEDGE_BASE = {
+
+  // ==================== 학교폭력 정의 ====================
+  definition: {
+    keywords: ['학교폭력', '뭐야', '무엇', '정의', '뭔지', '뭐가', '어떤것', '어떤 것', '학폭이란', '학폭이', '종류', '유형'],
+    title: '학교폭력의 정의',
+    response: `<div class="section-title">📖 학교폭력이란?</div>
+「학교폭력예방 및 대책에 관한 법률」 제2조에 따르면, <strong>학교폭력</strong>이란 학교 내외에서 학생을 대상으로 발생한 다음과 같은 행위를 말합니다:
+
+<ul>
+<li><strong>신체 폭력</strong> — 때리기, 밀치기, 발로 차기 등 신체에 해를 가하는 행위</li>
+<li><strong>언어 폭력</strong> — 욕설, 모욕, 협박, 명예훼손 등</li>
+<li><strong>따돌림</strong> — 집단적으로 의도적·반복적으로 피하거나 괴롭히는 행위</li>
+<li><strong>사이버 폭력</strong> — SNS, 메신저 등을 통한 괴롭힘</li>
+<li><strong>금품 갈취</strong> — 돈이나 물건을 빼앗는 행위</li>
+<li><strong>강요</strong> — 하기 싫은 일을 강제로 시키는 행위</li>
+<li><strong>성폭력</strong> — 성적 수치심을 주는 행위</li>
+<li><strong>재물 손괴</strong> — 다른 학생의 물건을 파손하는 행위</li>
+</ul>
+
+<div class="info-box">💡 학교 안뿐만 아니라 등하교길, 학원, 온라인에서 발생하는 것도 포함됩니다.</div>
+<div class="law-ref">📋 근거: 학교폭력예방법 제2조(정의)</div>`,
+    quickReplies: ['신고는 어떻게 해요?', '피해학생 지원', '가해학생 조치', '사이버폭력']
+  },
+
+  // ==================== 신고 방법 ====================
+  reporting: {
+    keywords: ['신고', '어떻게', '도움', '알려', '연락', '전화', '어디', '누구', '말해야', '대처', '방법', '해야'],
+    title: '신고 및 대처 방법',
+    response: `<div class="section-title">🆘 학교폭력 신고·대처 방법</div>
+학교폭력을 겪고 있다면, <strong>혼자 참지 마세요.</strong> 여러 방법으로 도움을 받을 수 있습니다.
+
+<div class="section-title">📞 긴급 신고</div>
+<div class="crisis-box">
+<strong>117</strong> — 학교폭력 신고센터 (24시간)<br>
+<strong>112</strong> — 경찰 긴급신고<br>
+<strong>1388</strong> — 청소년 전화 (24시간 상담)<br>
+<strong>1393</strong> — 정신건강 위기상담 전화
+</div>
+
+<div class="section-title">🏫 학교 내 신고</div>
+<ul>
+<li>담임선생님, 상담선생님, 보건선생님에게 알리기</li>
+<li>학교 내 학교폭력 신고함 이용</li>
+<li>학부모가 직접 학교에 신고</li>
+</ul>
+
+<div class="section-title">📱 온라인 신고</div>
+<ul>
+<li>안전Dream(117.go.kr) 온라인 신고</li>
+<li>Wee센터, 교육청 홈페이지 신고</li>
+</ul>
+
+<div class="info-box">💡 신고 시에는 <strong>날짜, 장소, 가해자 정보, 구체적 상황</strong>을 기록해 두면 도움이 됩니다.</div>
+<div class="law-ref">📋 근거: 학교폭력예방법 제20조(신고의무)</div>`,
+    quickReplies: ['신고 후 절차가 궁금해요', '피해학생 보호', '증거 수집 방법', '심리상담 받고 싶어요']
+  },
+
+  // ==================== 신고 후 절차 ====================
+  procedure: {
+    keywords: ['절차', '과정', '처리', '이후', '다음', '후에', '조사', '심의', '위원회', '진행'],
+    title: '사안처리 절차',
+    response: `<div class="section-title">📋 학교폭력 사안처리 절차</div>
+학교폭력 신고 후에는 다음과 같은 절차가 진행됩니다:
+
+<div class="section-title">1단계: 신고 접수 및 초기 대응</div>
+<ul>
+<li>사안 접수 후 <strong>피해학생 즉시 보호조치</strong></li>
+<li>피해·가해학생 분리</li>
+<li>학교장이 사안 확인 후 교육지원청에 보고</li>
+</ul>
+
+<div class="section-title">2단계: 사실 조사 (10일 이내)</div>
+<ul>
+<li>피해·가해 학생, 목격자 면담</li>
+<li>증거자료 수집 및 확인</li>
+<li>필요시 전문상담 진행</li>
+</ul>
+
+<div class="section-title">3단계: 학교폭력대책심의위원회 심의</div>
+<ul>
+<li>교육지원청에 설치된 심의위원회에서 사안 심의</li>
+<li>피해·가해 학생 측 의견 진술 기회 부여</li>
+<li>피해학생 보호조치 및 가해학생 조치 결정</li>
+</ul>
+
+<div class="section-title">4단계: 조치 이행 및 사후관리</div>
+<ul>
+<li>결정된 조치 이행</li>
+<li>1개월, 3개월, 6개월 후 추수지도</li>
+<li>관계회복 프로그램 운영</li>
+</ul>
+
+<div class="info-box">💡 심의위원회 개최 전에 피해학생과 가해학생 측이 합의한 경우, 학교장이 자체적으로 해결할 수도 있습니다.</div>
+<div class="law-ref">📋 근거: 학교폭력예방법 제12조~제17조</div>`,
+    quickReplies: ['피해학생 보호조치', '가해학생 조치 종류', '학교장 자체해결 조건', '조정·화해 절차']
+  },
+
+  // ==================== 피해학생 지원 ====================
+  victimSupport: {
+    keywords: ['피해', '보호', '지원', '도와', '도움', '피해학생', '피해자', '보호조치', '치료', '전학'],
+    title: '피해학생 보호·지원',
+    response: `<div class="section-title">🤝 피해학생 보호·지원 조치</div>
+법률에 따라 피해학생은 다음과 같은 <strong>보호조치</strong>를 받을 수 있습니다:
+
+<div class="section-title">보호조치 유형 (제16조)</div>
+<ul>
+<li><strong>1호:</strong> 학내외 전문가에 의한 심리상담 및 조언</li>
+<li><strong>2호:</strong> 일시보호 (안전한 장소에서 보호)</li>
+<li><strong>3호:</strong> 치료 및 치료를 위한 요양</li>
+<li><strong>4호:</strong> 학급교체</li>
+<li><strong>5호:</strong> 전학 권고</li>
+<li><strong>6호:</strong> 그 밖에 피해학생 보호에 필요한 조치</li>
+</ul>
+
+<div class="section-title">추가 지원</div>
+<ul>
+<li>보호조치에 따른 <strong>결석은 출석으로 인정</strong></li>
+<li>성적은 <strong>재평가, 인정 등 불이익 없도록</strong> 처리</li>
+<li>치료비 등 비용은 <strong>가해학생 보호자가 부담</strong> (원칙)</li>
+<li>피해학생의 <strong>신원 비공개</strong> 보장</li>
+<li>전문 심리상담 무료 지원</li>
+</ul>
+
+<div class="info-box">💡 피해학생 측은 심의위원회에 보호조치를 요청할 수 있으며, 조치에 불복 시 행정심판을 청구할 수 있습니다.</div>
+<div class="law-ref">📋 근거: 학교폭력예방법 제16조(피해학생의 보호)</div>`,
+    quickReplies: ['치료비 지원', '심리상담 받기', '전학 절차', '가해학생 조치']
+  },
+
+  // ==================== 가해학생 조치 ====================
+  perpetrator: {
+    keywords: ['가해', '처벌', '조치', '벌', '가해학생', '가해자', '어떻게 되', '무슨 조치', '제재'],
+    title: '가해학생 조치',
+    response: `<div class="section-title">⚖️ 가해학생에 대한 조치</div>
+심의위원회의 심의를 거쳐 다음의 <strong>조치가 가해학생에게</strong> 내려질 수 있습니다:
+
+<div class="section-title">조치 유형 (제17조) — 경중순</div>
+<ul>
+<li><strong>1호:</strong> 피해학생에 대한 서면사과</li>
+<li><strong>2호:</strong> 피해학생 및 신고·고발 학생에 대한 접촉, 협박 및 보복행위 금지</li>
+<li><strong>3호:</strong> 학교에서의 봉사</li>
+<li><strong>4호:</strong> 사회봉사</li>
+<li><strong>5호:</strong> 학내외 전문가에 의한 특별교육 이수 또는 심리치료</li>
+<li><strong>6호:</strong> 출석정지</li>
+<li><strong>7호:</strong> 학급교체</li>
+<li><strong>8호:</strong> 전학</li>
+<li><strong>9호:</strong> 퇴학처분 (고등학생에 한함)</li>
+</ul>
+
+<div class="section-title">조치 결정 시 고려사항</div>
+<ul>
+<li>학교폭력의 심각성, 지속성, 고의성</li>
+<li>가해학생의 반성 정도</li>
+<li>피해학생과의 화해 여부</li>
+<li>가해학생의 선도 가능성</li>
+</ul>
+
+<div class="info-box">💡 1~3호 조치는 학교생활기록부에 기재 후 졸업과 동시에 삭제됩니다. 4호 이상은 졸업 후 2년 뒤 삭제를 심의할 수 있습니다.</div>
+<div class="law-ref">📋 근거: 학교폭력예방법 제17조(가해학생에 대한 조치)</div>`,
+    quickReplies: ['학생부 기재', '조치 불복 방법', '생활기록부 삭제', '피해학생 보호조치']
+  },
+
+  // ==================== 사이버폭력 ====================
+  cyber: {
+    keywords: ['사이버', '온라인', '인터넷', '카톡', '카카오톡', 'SNS', '메신저', '단톡방', '단체', '채팅', '디지털', '게시글', '악플'],
+    title: '사이버폭력',
+    response: `<div class="section-title">📱 사이버폭력 대응</div>
+사이버폭력도 학교폭력에 해당하며, 법적으로 동일하게 보호받습니다.
+
+<div class="section-title">사이버폭력의 유형</div>
+<ul>
+<li><strong>사이버 따돌림:</strong> 단톡방에서 의도적으로 왕따시키기</li>
+<li><strong>사이버 명예훼손:</strong> 허위사실 유포, 악성 댓글</li>
+<li><strong>사이버 스토킹:</strong> 반복적인 메시지, 위치 추적</li>
+<li><strong>사이버 성폭력:</strong> 성적 이미지 유포, 몰래카메라</li>
+<li><strong>사이버 갈취:</strong> 온라인 상에서의 금품 요구</li>
+</ul>
+
+<div class="section-title">대처 방법</div>
+<ul>
+<li><strong>증거 확보:</strong> 스크린샷, 대화 기록 저장 (날짜, 시간 포함)</li>
+<li><strong>차단 및 신고:</strong> 해당 플랫폼에서 사용자 차단, 신고</li>
+<li><strong>삭제 요청:</strong> 방송통신심의위원회에 게시물 삭제 요청</li>
+<li><strong>경찰 신고:</strong> 112 또는 사이버수사대에 신고</li>
+<li><strong>학교 신고:</strong> 담임선생님 또는 117에 신고</li>
+</ul>
+
+<div class="crisis-box">
+<strong>📞 사이버폭력 관련 도움처</strong><br>
+• 117 학교폭력 신고센터<br>
+• 방송통신심의위원회: 1377<br>
+• 디지털성범죄 피해자 지원: 02-735-8994<br>
+• 사이버수사대: 경찰청 182
+</div>
+<div class="law-ref">📋 근거: 학교폭력예방법 제2조, 정보통신망법</div>`,
+    quickReplies: ['증거 수집 방법', '신고 방법', '심리상담 받기', '피해학생 지원']
+  },
+
+  // ==================== 학교장 자체해결 ====================
+  selfResolve: {
+    keywords: ['자체해결', '학교장', '합의', '경미', '가벼운', '자체'],
+    title: '학교장 자체해결',
+    response: `<div class="section-title">🏫 학교장 자체해결 제도</div>
+다음 조건을 <strong>모두</strong> 만족하는 경우, 심의위원회를 거치지 않고 학교장이 자체적으로 해결할 수 있습니다:
+
+<div class="section-title">자체해결 요건 (제13조의2)</div>
+<ul>
+<li>피해학생과 보호자가 심의위원회 개최를 원하지 않는 경우</li>
+<li>학교폭력이 <strong>경미</strong>하다고 인정되는 경우:
+  <ul>
+    <li>2주 이상의 신체적·정신적 치료가 필요하지 않은 경우</li>
+    <li>재산상 피해가 없거나 즉각 복구된 경우</li>
+    <li>학교폭력이 지속적이지 않은 경우</li>
+    <li>학교폭력에 대한 고의성이 인정되지 않는 경우</li>
+  </ul>
+</li>
+</ul>
+
+<div class="info-box">💡 학교장 자체해결 시에도 관계회복 프로그램, 상담 등 교육적 조치를 병행합니다. 자체해결된 사안은 학교생활기록부에 기재되지 않습니다.</div>
+<div class="law-ref">📋 근거: 학교폭력예방법 제13조의2(학교장의 자체해결)</div>`,
+    quickReplies: ['심의위원회 절차', '가해학생 조치', '피해학생 보호', '조정 절차']
+  },
+
+  // ==================== 학생부 기재 ====================
+  schoolRecord: {
+    keywords: ['학생부', '생활기록부', '기재', '기록', '삭제', '대학', '입시', '학교생활기록부'],
+    title: '학교생활기록부 기재',
+    response: `<div class="section-title">📝 학교생활기록부 기재·삭제</div>
+
+<div class="section-title">기재 기준</div>
+<ul>
+<li><strong>1~3호 조치:</strong> 학교생활기록부에 기재 → <strong>졸업 시 자동 삭제</strong></li>
+<li><strong>4~9호 조치:</strong> 학교생활기록부에 기재 → <strong>졸업 후 2년 뒤 삭제 심의</strong></li>
+</ul>
+
+<div class="section-title">삭제 심의 기준</div>
+<ul>
+<li>해당 조치를 성실히 이행했는지</li>
+<li>추가적인 학교폭력이 없었는지</li>
+<li>반성 및 개선 정도</li>
+</ul>
+
+<div class="section-title">학교장 자체해결의 경우</div>
+<ul>
+<li>학교생활기록부에 <strong>기재하지 않음</strong></li>
+</ul>
+
+<div class="info-box">💡 학교폭력 조치 사항은 대입 전형에서 불이익이 될 수 있으므로, 조기에 적극적으로 대응하는 것이 중요합니다.</div>
+<div class="law-ref">📋 근거: 학교폭력예방법 제17조 제6항</div>`,
+    quickReplies: ['가해학생 조치 종류', '조치 불복 방법', '학교장 자체해결']
+  },
+
+  // ==================== 조정·화해 ====================
+  mediation: {
+    keywords: ['조정', '화해', '분쟁조정', '합의', '관계회복', '사과', '용서'],
+    title: '조정·화해 절차',
+    response: `<div class="section-title">🤝 분쟁조정·관계회복</div>
+
+<div class="section-title">분쟁조정 절차</div>
+<ul>
+<li>심의위원회는 피해·가해학생 간 <strong>분쟁조정</strong>을 할 수 있음</li>
+<li>신청일부터 <strong>1개월 이내</strong> 완료 원칙</li>
+<li>양측의 동의가 필요하며, 강제할 수 없음</li>
+</ul>
+
+<div class="section-title">조정 진행 방식</div>
+<ul>
+<li>중립적인 조정자(전문상담사, 법률전문가 등)가 참여</li>
+<li>양측의 이야기를 각각 또는 함께 듣고 합의점 도출</li>
+<li>합의 내용: 사과, 배상, 행동 약속 등</li>
+<li>합의서 작성 및 이행 모니터링</li>
+</ul>
+
+<div class="section-title">관계회복 프로그램</div>
+<ul>
+<li>피해·가해학생 간 관계 개선을 위한 프로그램</li>
+<li>전문 상담사가 진행</li>
+<li>상호 이해와 공감 능력 향상 목표</li>
+</ul>
+
+<div class="info-box">💡 조정이 성립되면 심의위원회는 이를 존중하여 처리합니다. 단, 피해학생의 안전이 최우선입니다.</div>
+<div class="law-ref">📋 근거: 학교폭력예방법 제18조(분쟁조정)</div>`,
+    quickReplies: ['사안처리 절차', '피해학생 보호', '가해학생 조치']
+  },
+
+  // ==================== 불복·행정심판 ====================
+  appeal: {
+    keywords: ['불복', '이의', '행정심판', '억울', '부당', '재심', '항소', '행정소송'],
+    title: '불복·행정심판',
+    response: `<div class="section-title">⚖️ 조치에 대한 불복 절차</div>
+
+<div class="section-title">피해학생 측 불복</div>
+<ul>
+<li>보호조치(제16조)에 대해 이의가 있는 경우</li>
+<li>심의위원회에 <strong>재심 청구</strong> 가능</li>
+<li>재심 결과에도 불복 시 <strong>행정심판</strong> 청구 가능</li>
+</ul>
+
+<div class="section-title">가해학생 측 불복</div>
+<ul>
+<li>가해조치(제17조)에 대해 이의가 있는 경우</li>
+<li><strong>행정심판</strong>을 청구할 수 있음</li>
+<li>조치를 받은 날로부터 <strong>90일 이내</strong> 청구</li>
+<li>행정심판 결과에도 불복 시 <strong>행정소송</strong> 가능</li>
+</ul>
+
+<div class="info-box">💡 행정심판은 무료이며, 청소년 법률지원센터(02-6003-0100)에서 도움을 받을 수 있습니다.</div>
+<div class="law-ref">📋 근거: 학교폭력예방법 제17조의2(행정심판)</div>`,
+    quickReplies: ['가해학생 조치 종류', '피해학생 보호', '법률 상담 연락처']
+  },
+
+  // ==================== 따돌림 ====================
+  bullying: {
+    keywords: ['따돌림', '왕따', '외톨이', '소외', '무시', '안놀아', '안 놀아', '끼워주지', '혼자'],
+    title: '따돌림',
+    response: `<div class="section-title">🫂 따돌림(집단따돌림) 대응</div>
+따돌림은 엄연한 <strong>학교폭력</strong>이며, 법적으로 보호받을 수 있습니다.
+
+<div class="section-title">따돌림의 정의</div>
+<ul>
+<li>두 명 이상이 특정 학생을 <strong>의도적·반복적</strong>으로 피하거나 괴롭히는 행위</li>
+<li>말을 걸어도 무시하기, 단톡방에서 내보내기, 같이 밥을 안 먹기 등 포함</li>
+</ul>
+
+<div class="section-title">이렇게 대처하세요</div>
+<ul>
+<li><strong>기록하기:</strong> 언제, 어디서, 누가, 무엇을 했는지 일기처럼 기록</li>
+<li><strong>알리기:</strong> 부모님, 선생님, 상담선생님에게 알리세요</li>
+<li><strong>신고하기:</strong> 117(학교폭력신고센터)에 전화하세요</li>
+<li><strong>상담받기:</strong> Wee센터나 청소년상담복지센터 이용</li>
+</ul>
+
+<div class="info-box">💡 "참으면 나아진다"는 생각은 오히려 상황을 악화시킬 수 있어요. 도움을 요청하는 것은 약한 게 아니라 <strong>용기 있는 행동</strong>입니다.</div>`,
+    quickReplies: ['신고 방법', '심리상담 받기', '피해학생 지원']
+  },
+
+  // ==================== 증거 수집 ====================
+  evidence: {
+    keywords: ['증거', '수집', '모으', '녹음', '스크린샷', '캡처', '증명', '사진', '영상'],
+    title: '증거 수집 방법',
+    response: `<div class="section-title">📸 증거 수집 방법</div>
+학교폭력 사안 처리에 있어 증거는 매우 중요합니다.
+
+<div class="section-title">효과적인 증거 수집</div>
+<ul>
+<li><strong>문자/채팅 기록:</strong> 스크린샷 저장 (날짜, 시간, 상대방 닉네임/이름 포함)</li>
+<li><strong>음성/영상:</strong> 대화를 녹음하거나 현장을 촬영 (본인이 대화 당사자인 경우 녹음 가능)</li>
+<li><strong>목격자 확보:</strong> 사건을 목격한 친구들의 진술</li>
+<li><strong>진단서:</strong> 신체적 피해 시 병원 진단서 발급</li>
+<li><strong>사건 일지:</strong> 날짜, 시간, 장소, 상황, 가해자를 구체적으로 기록</li>
+</ul>
+
+<div class="info-box">💡 증거는 원본 보존이 중요합니다. 삭제되거나 수정될 수 있으므로 여러 곳에 백업해 두세요.</div>`,
+    quickReplies: ['신고 방법', '사안처리 절차', '피해학생 보호']
+  },
+
+  // ==================== 치료비 ====================
+  medicalCost: {
+    keywords: ['치료비', '병원', '비용', '돈', '치료', '배상', '손해배상'],
+    title: '치료비·손해배상',
+    response: `<div class="section-title">💰 치료비 및 손해배상</div>
+
+<div class="section-title">치료비 부담 원칙</div>
+<ul>
+<li>피해학생의 치료비는 원칙적으로 <strong>가해학생의 보호자가 부담</strong></li>
+<li>가해학생 보호자가 부담하지 않을 경우, <strong>학교안전공제회</strong>에서 선 지급 후 구상 가능</li>
+</ul>
+
+<div class="section-title">손해배상 청구</div>
+<ul>
+<li>민사소송을 통해 치료비, 위자료 등 <strong>손해배상 청구</strong> 가능</li>
+<li>미성년자의 불법행위에 대해 <strong>보호자의 감독의무 위반</strong>으로 연대 책임 가능</li>
+<li>법률구조공단(132)에서 무료 법률 상담 가능</li>
+</ul>
+
+<div class="info-box">💡 대한법률구조공단(132)이나 청소년 법률지원센터(02-6003-0100)에서 무료 법률 상담을 받으실 수 있습니다.</div>
+<div class="law-ref">📋 근거: 학교폭력예방법 제16조 제6항, 민법 제750조, 제755조</div>`,
+    quickReplies: ['피해학생 보호조치', '사안처리 절차', '법률 상담 연락처']
+  },
+
+  // ==================== 법률 상담 연락처 ====================
+  legalContacts: {
+    keywords: ['법률상담', '변호사', '법률', '무료상담', '법률구조', '법적'],
+    title: '법률 상담 연락처',
+    response: `<div class="section-title">⚖️ 무료 법률 상담 안내</div>
+
+<div class="crisis-box">
+<strong>📞 무료 법률 상담 기관</strong><br>
+• <strong>대한법률구조공단:</strong> 132<br>
+• <strong>청소년 법률지원센터:</strong> 02-6003-0100<br>
+• <strong>대한변호사협회 법률구조재단:</strong> 02-3476-6001<br>
+• <strong>법률홈닥터:</strong> 국번없이 132<br>
+• <strong>학교폭력 피해학생 법률지원:</strong> 교육청 문의
+</div>
+
+<div class="info-box">💡 학교폭력 피해학생은 법률구조공단에서 <strong>무료로</strong> 법률 상담과 소송 대리를 받을 수 있습니다.</div>`,
+    quickReplies: ['피해학생 보호조치', '손해배상 청구', '사안처리 절차']
+  },
+
+  // ==================== 심리상담 - 일반 ====================
+  counseling: {
+    keywords: ['상담', '심리', '심리상담', '마음', '감정', '정신건강', '힐링', '회복', '상담사', 'wee', '위센터'],
+    title: '심리상담 안내',
+    response: `<div class="section-title">💛 심리상담 서비스 안내</div>
+학교폭력으로 인한 마음의 상처는 전문적인 도움을 받으면 회복할 수 있습니다.
+
+<div class="section-title">무료 상담 기관</div>
+<div class="crisis-box">
+<strong>📞 바로 연락 가능한 곳</strong><br>
+• <strong>Wee센터:</strong> 학교·교육지원청에 설치, 전문상담 제공<br>
+• <strong>청소년상담복지센터:</strong> 1388 (24시간)<br>
+• <strong>정신건강복지센터:</strong> 1577-0199<br>
+• <strong>학교폭력피해자가족협회:</strong> 02-585-2224<br>
+• <strong>해맞이(학교폭력 피해자 전용):</strong> 교육청 문의
+</div>
+
+<div class="section-title">상담 종류</div>
+<ul>
+<li><strong>개인상담:</strong> 1:1 전문상담사와 이야기 나누기</li>
+<li><strong>집단상담:</strong> 비슷한 경험을 가진 또래와 함께</li>
+<li><strong>가족상담:</strong> 부모님과 함께 상담받기</li>
+<li><strong>온라인 상담:</strong> 채팅이나 전화로 편하게</li>
+<li><strong>놀이/미술 치료:</strong> 말로 표현하기 어려울 때</li>
+</ul>
+
+<div class="info-box">💡 상담받는 것은 부끄러운 일이 아니에요. 마음이 아프면 치료를 받는 것처럼, 정신적 고통도 전문가의 도움을 받는 것이 자연스럽고 용기 있는 선택입니다.</div>`,
+    quickReplies: ['트라우마 대처법', '불안할 때 대처법', '자존감 회복하기', '긴급 연락처']
+  },
+
+  // ==================== 심리상담 - 힘듦/공포 ====================
+  emotional: {
+    keywords: ['힘들', '무서', '두려', '겁', '무섭', '어떡해', '어떻게 해', '살기', '죽', '도와줘', '고통', '괴로', '우울', '불안', '걱정', '스트레스', '잠이', '못자', '떨려', '떨리'],
+    title: '마음 돌봄',
+    response: `<div class="section-title">💛 지금 많이 힘드시죠?</div>
+먼저, 이렇게 이야기해 주셔서 정말 감사해요. 지금 느끼는 감정은 <strong>자연스러운 반응</strong>이에요. 당신 잘못이 아닙니다.
+
+<div class="section-title">지금 이 순간, 해볼 수 있는 것들</div>
+<ul>
+<li><strong>🫁 깊은 호흡:</strong> 4초 들이쉬고 → 4초 멈추고 → 6초 내쉬기 (3번 반복)</li>
+<li><strong>🦶 그라운딩:</strong> 지금 보이는 것 5가지, 들리는 것 4가지, 만질 수 있는 것 3가지를 찾아보세요</li>
+<li><strong>📝 감정 적기:</strong> 지금 느끼는 감정을 한 문장으로 적어보세요</li>
+<li><strong>🧊 찬물 세수:</strong> 차가운 물로 세수하면 긴장 완화에 도움이 돼요</li>
+</ul>
+
+<div class="crisis-box">
+<strong>🆘 지금 바로 이야기할 수 있는 곳</strong><br>
+• <strong>1388</strong> — 청소년 전화 (24시간)<br>
+• <strong>1393</strong> — 정신건강 위기상담 (24시간)<br>
+• <strong>117</strong> — 학교폭력 신고·상담<br>
+• <strong>109</strong> — 여성긴급전화 (성폭력)<br>
+전화가 어려우면 카카오톡 '마음이음'을 검색해 채팅 상담도 가능해요.
+</div>
+
+당신은 <strong>혼자가 아니에요.</strong> 도움을 요청하는 것은 매우 용기 있는 행동입니다. 💛`,
+    quickReplies: ['심리상담 기관 안내', '트라우마 대처법', '자존감 회복하기', '신고 방법']
+  },
+
+  // ==================== 심리 - 위기상황 ====================
+  crisis: {
+    keywords: ['죽고싶', '자살', '자해', '끝내고', '사라지고', '없어지고', '의미없', '살고싶지'],
+    title: '위기상담',
+    response: `<div class="crisis-box" style="background:#FFF0F0;border-left-color:#E85A5A;">
+<strong>🆘 지금 매우 힘든 상황이시군요.</strong><br><br>
+당신의 고통을 알겠어요. 하지만 <strong>당신은 소중한 사람</strong>이에요.<br>
+지금 바로 전문 상담사와 이야기해 주세요:<br><br>
+<strong style="font-size:16px;">📞 자살예방상담: 1393 (24시간)</strong><br>
+<strong style="font-size:16px;">📞 청소년 전화: 1388 (24시간)</strong><br>
+<strong style="font-size:16px;">📞 생명의 전화: 1588-9191</strong><br><br>
+전화가 어려우면 카카오톡에서 <strong>'마음이음'</strong>을 검색하면<br>
+채팅으로도 상담받을 수 있어요.<br><br>
+<strong>당신은 혼자가 아닙니다. 💛</strong>
+</div>`,
+    quickReplies: ['심리상담 기관', '도움 받을 수 있는 곳']
+  },
+
+  // ==================== 심리 - 트라우마 ====================
+  trauma: {
+    keywords: ['트라우마', '악몽', '플래시백', '떠올', '기억', '잊을수', '잊을 수', 'ptsd', '공황'],
+    title: '트라우마 대처',
+    response: `<div class="section-title">🌱 트라우마 대처 방법</div>
+학교폭력을 경험한 후 다음과 같은 반응이 나타날 수 있어요. 이것은 <strong>비정상적인 상황에 대한 정상적인 반응</strong>입니다.
+
+<div class="section-title">흔한 트라우마 반응</div>
+<ul>
+<li>사건이 계속 떠오르거나 악몽을 꿈</li>
+<li>갑자기 불안하거나 심장이 빨리 뜀</li>
+<li>학교에 가기 싫거나 특정 장소를 피함</li>
+<li>집중이 안 되고 기분이 자주 바뀜</li>
+<li>잠이 안 오거나 식욕이 변함</li>
+</ul>
+
+<div class="section-title">도움이 되는 방법</div>
+<ul>
+<li><strong>안전한 사람에게 이야기하기:</strong> 혼자 간직하지 말고, 믿을 수 있는 사람에게 이야기하세요</li>
+<li><strong>규칙적인 생활:</strong> 정해진 시간에 자고, 먹고, 활동하는 것이 안정감을 줘요</li>
+<li><strong>호흡과 이완:</strong> 긴장될 때 깊은 호흡을 반복하세요</li>
+<li><strong>자기돌봄:</strong> 좋아하는 음악, 산책, 일기 쓰기 등 마음이 편안해지는 활동 하기</li>
+<li><strong>전문 상담:</strong> EMDR, 인지행동치료(CBT) 등 트라우마 전문 치료 받기</li>
+</ul>
+
+<div class="info-box">💡 트라우마는 시간만으로 낫지 않을 수 있어요. 전문가의 도움을 받으면 훨씬 빠르고 효과적으로 회복할 수 있습니다.</div>`,
+    quickReplies: ['심리상담 기관', '불안 대처법', '자존감 회복', '긴급 연락처']
+  },
+
+  // ==================== 심리 - 자존감 ====================
+  selfEsteem: {
+    keywords: ['자존감', '자신감', '못생', '바보', '쓸모없', '쓸모 없', '가치', '존재', '나는', '내가 나빠', '내 잘못', '못나'],
+    title: '자존감 회복',
+    response: `<div class="section-title">🌟 자존감 회복하기</div>
+학교폭력을 겪으면 "내가 부족해서", "내 잘못이야"라는 생각이 들 수 있어요. 하지만 <strong>학교폭력은 절대 당신 잘못이 아닙니다.</strong>
+
+<div class="section-title">자존감을 회복하는 방법</div>
+<ul>
+<li><strong>🪞 자기 확인:</strong> 매일 거울을 보며 "나는 소중한 사람이야"라고 말해보세요</li>
+<li><strong>📖 작은 성취 기록:</strong> 매일 잘한 일을 3가지씩 적어보세요 (아무리 작은 것도 OK)</li>
+<li><strong>🚫 부정적 생각 바꾸기:</strong> "나는 못해" → "나는 배워가고 있어"</li>
+<li><strong>👥 안전한 관계:</strong> 나를 존중해주는 사람과 시간을 보내세요</li>
+<li><strong>🎨 자기표현:</strong> 그림, 글쓰기, 음악 등으로 감정을 표현해보세요</li>
+<li><strong>💪 신체활동:</strong> 운동은 자존감 향상에 과학적으로 증명된 방법이에요</li>
+</ul>
+
+<div class="info-box">💡 자존감 회복은 시간이 걸리는 여정이에요. 조급해하지 마시고, 작은 변화부터 시작해보세요. 당신은 충분히 가치 있는 사람입니다. 🌟</div>`,
+    quickReplies: ['심리상담 받기', '트라우마 대처법', '도움 받을 수 있는 곳']
+  },
+
+  // ==================== 심리 - 불안 ====================
+  anxiety: {
+    keywords: ['불안', '긴장', '떨', '심장', '가슴', '호흡', '숨', '패닉', '공황', '손떨'],
+    title: '불안 대처',
+    response: `<div class="section-title">🧘 불안할 때 대처하는 방법</div>
+불안은 몸이 위험을 감지하고 보호하려는 <strong>자연스러운 반응</strong>이에요. 학교폭력 이후에 불안을 느끼는 것은 당연한 일입니다.
+
+<div class="section-title">지금 바로 시도해볼 수 있는 것들</div>
+<ul>
+<li><strong>🫁 4-7-8 호흡법:</strong> 4초 들이쉬기 → 7초 참기 → 8초 내쉬기 (3~5회 반복)</li>
+<li><strong>🧊 5-4-3-2-1 그라운딩:</strong>
+  <ul>
+    <li>보이는 것 5가지</li>
+    <li>만질 수 있는 것 4가지</li>
+    <li>들리는 것 3가지</li>
+    <li>냄새 맡을 수 있는 것 2가지</li>
+    <li>맛볼 수 있는 것 1가지</li>
+  </ul>
+</li>
+<li><strong>💧 차가운 물:</strong> 찬물로 손목을 적시거나 세수하기</li>
+<li><strong>🦋 나비 토닥임:</strong> 양팔을 교차해서 어깨를 번갈아 토닥이기</li>
+</ul>
+
+<div class="info-box">💡 불안이 일상생활(학교, 수면, 식사)에 지장을 주고 있다면, 반드시 전문 상담을 받으세요. Wee센터(학교 문의) 또는 1388로 연락하세요.</div>`,
+    quickReplies: ['심리상담 기관', '트라우마 대처법', '자존감 회복', '긴급 연락처']
+  },
+
+  // ==================== 부모님 안내 ====================
+  parents: {
+    keywords: ['부모', '학부모', '엄마', '아빠', '보호자', '부모님', '아이가', '우리 아이', '자녀'],
+    title: '학부모 안내',
+    response: `<div class="section-title">👨‍👩‍👧 학부모를 위한 안내</div>
+
+<div class="section-title">자녀가 피해를 입었을 때</div>
+<ul>
+<li><strong>우선 안정시키기:</strong> "네 잘못이 아니야, 잘 말해줬어"라고 안심시켜 주세요</li>
+<li><strong>사실 확인:</strong> 차분하게 이야기를 들어주되, 캐묻기보다 기다려주세요</li>
+<li><strong>증거 확보:</strong> 문자, 사진, 진단서 등 관련 자료 확보</li>
+<li><strong>신고하기:</strong> 학교, 117, 교육지원청에 신고</li>
+<li><strong>전문 상담:</strong> Wee센터, 1388 등에서 전문 상담 연계</li>
+</ul>
+
+<div class="section-title">주의할 점</div>
+<ul>
+<li>아이를 탓하거나 "왜 참았어?"라고 하지 말아 주세요</li>
+<li>감정적으로 가해학생 측에 직접 접촉하지 마세요 (법적 절차 이용)</li>
+<li>SNS에 사건을 공개하면 오히려 불리해질 수 있어요</li>
+<li>아이의 회복을 최우선으로 생각해 주세요</li>
+</ul>
+
+<div class="section-title">자녀가 가해자일 때</div>
+<ul>
+<li>사실관계를 정확히 확인하세요</li>
+<li>아이에게 행동의 결과와 피해자의 고통을 이해하게 해주세요</li>
+<li>진심 어린 사과와 재발 방지를 위해 노력하세요</li>
+<li>필요시 전문 상담을 받으세요</li>
+</ul>
+
+<div class="info-box">💡 부모님의 침착하고 지지적인 태도가 자녀 회복에 가장 큰 힘이 됩니다.</div>`,
+    quickReplies: ['피해학생 보호조치', '가해학생 조치', '심리상담 기관', '법률 상담']
+  },
+
+  // ==================== 성폭력 ====================
+  sexual: {
+    keywords: ['성폭력', '성희롱', '성추행', '성적', '몰카', '몰래카메라', '노출', '성범죄'],
+    title: '성폭력',
+    response: `<div class="section-title">🔒 성폭력 대응 안내</div>
+학교에서의 성폭력은 매우 심각한 학교폭력이며, 특별한 보호를 받습니다.
+
+<div class="section-title">성폭력 유형</div>
+<ul>
+<li>신체적 성폭력 (성추행, 강제추행 등)</li>
+<li>언어적 성희롱 (성적 농담, 외모 비하 등)</li>
+<li>디지털 성범죄 (몰래카메라, 성적 사진 유포 등)</li>
+<li>스토킹 (집요한 따라다님, 연락 등)</li>
+</ul>
+
+<div class="crisis-box">
+<strong>🆘 성폭력 긴급 도움처</strong><br>
+• <strong>117</strong> — 학교폭력 신고<br>
+• <strong>112</strong> — 경찰 신고 (형사 사건)<br>
+• <strong>109</strong> — 여성긴급전화 (24시간)<br>
+• <strong>1899-3075</strong> — 디지털성범죄 피해자 지원센터<br>
+• <strong>해바라기센터</strong> — 성폭력 피해자 원스톱 지원
+</div>
+
+<div class="info-box">💡 성폭력은 <strong>절대 피해자 잘못이 아닙니다.</strong> 증거를 가능한 보존하고, 빠른 시일 내에 전문가에게 도움을 요청하세요. 피해 사실의 비밀은 철저히 보장됩니다.</div>`,
+    quickReplies: ['신고 방법', '피해학생 보호', '심리상담 받기']
+  },
+
+  // ==================== 금품갈취 ====================
+  extortion: {
+    keywords: ['금품', '갈취', '돈', '빼앗', '빼앗', '빌려', '셔틀', '심부름', '빵셔틀'],
+    title: '금품갈취',
+    response: `<div class="section-title">💰 금품갈취·강요 대응</div>
+돈이나 물건을 빼앗기거나 원치 않는 심부름을 강요받는 것도 <strong>학교폭력</strong>입니다.
+
+<div class="section-title">금품갈취/강요의 유형</div>
+<ul>
+<li>돈이나 물건을 빼앗는 행위</li>
+<li>"빌려달라"며 돌려주지 않는 행위</li>
+<li>대신 물건 사오기를 강요 (셔틀)</li>
+<li>게임 아이템, 쿠폰 등을 강제로 요구</li>
+<li>숙제, 과제를 대신 하게 하는 것도 포함</li>
+</ul>
+
+<div class="section-title">대처 방법</div>
+<ul>
+<li>빼앗긴 물건/금액을 기록하세요</li>
+<li>가능하다면 증거(문자, 녹음 등)를 확보하세요</li>
+<li>즉시 부모님이나 선생님에게 알리세요</li>
+<li>117(학교폭력 신고센터)에 신고하세요</li>
+</ul>
+
+<div class="info-box">💡 "돈을 주지 않으면 때리겠다"는 협박은 강도에 해당할 수 있는 심각한 범죄입니다. 반드시 신고하세요.</div>`,
+    quickReplies: ['신고 방법', '증거 수집', '피해학생 보호', '심리상담 받기']
+  },
+
+  // ==================== 긴급 연락처 총정리 ====================
+  contacts: {
+    keywords: ['연락처', '전화번호', '핫라인', '센터', '기관', '어디로'],
+    title: '도움 기관 연락처',
+    response: `<div class="section-title">📞 도움받을 수 있는 기관 총정리</div>
+
+<div class="crisis-box">
+<strong>🚨 긴급 신고</strong><br>
+• <strong>117</strong> — 학교폭력 신고·상담 (24시간)<br>
+• <strong>112</strong> — 경찰 긴급신고<br>
+• <strong>119</strong> — 응급상황
+</div>
+
+<div class="section-title">📱 상담 전화</div>
+<ul>
+<li><strong>1388</strong> — 청소년 전화 (24시간 상담)</li>
+<li><strong>1393</strong> — 정신건강 위기상담 (24시간)</li>
+<li><strong>1588-9191</strong> — 생명의 전화</li>
+<li><strong>1577-0199</strong> — 정신건강복지센터</li>
+<li><strong>109</strong> — 여성긴급전화 (24시간)</li>
+</ul>
+
+<div class="section-title">🏢 방문 상담</div>
+<ul>
+<li><strong>Wee센터:</strong> 학교·교육지원청 소속 (학교에 문의)</li>
+<li><strong>청소년상담복지센터:</strong> 각 시·군·구에 설치</li>
+<li><strong>해바라기센터:</strong> 성폭력 피해자 원스톱 지원</li>
+<li><strong>스마일센터:</strong> 범죄피해자 심리지원</li>
+</ul>
+
+<div class="section-title">⚖️ 법률 상담</div>
+<ul>
+<li><strong>132</strong> — 대한법률구조공단 (무료)</li>
+<li><strong>02-6003-0100</strong> — 청소년 법률지원센터</li>
+</ul>`,
+    quickReplies: ['신고 방법', '심리상담 안내', '피해학생 보호']
+  },
+
+  // ==================== 인사/감사 ====================
+  greeting: {
+    keywords: ['안녕', '하이', 'hi', 'hello', '반가', '감사', '고마', '고맙', '땡큐', '잘 가', '바이'],
+    title: '인사',
+    response: null // Handled specially
+  }
+};
+
+// --- AI System Prompt ---
+const SYSTEM_PROMPT = `당신은 "END NF 학교폭력 상담 챗봇"입니다. 학교폭력 피해학생, 학부모, 교사 등에게 법률 상담과 심리 상담을 제공합니다.
+
+## 성격과 태도
+- 따뜻하고 공감적인 어투를 사용합니다
+- 상대방의 감정을 먼저 인정하고 공감합니다
+- 존댓말을 사용하되 딱딱하지 않게 말합니다
+- 위기 상황(자해, 자살 언급)에서는 즉시 긴급 연락처를 안내합니다
+
+## 법률 지식 (학교폭력예방 및 대책에 관한 법률, 2025년 시행)
+
+### 학교폭력 정의 (제2조)
+학교 내외에서 학생을 대상으로 발생한 신체폭력, 언어폭력, 따돌림, 사이버폭력, 금품갈취, 강요, 성폭력, 재물손괴 등의 행위
+
+### 신고 (제20조)
+- 117 학교폭력 신고센터 (24시간)
+- 112 경찰 긴급신고
+- 학교 내 신고: 담임, 상담교사, 보건교사
+- 온라인: 안전Dream(117.go.kr)
+
+### 사안처리 절차
+1. 신고 접수 → 피해학생 보호 → 피해·가해 분리
+2. 사실 조사 (10일 이내)
+3. 학교폭력대책심의위원회 심의 (교육지원청)
+4. 조치 결정 → 이행 → 사후관리 (1/3/6개월)
+
+### 피해학생 보호조치 (제16조)
+1호: 심리상담, 2호: 일시보호, 3호: 치료·요양, 4호: 학급교체, 5호: 전학권고, 6호: 기타
+- 결석은 출석 인정, 성적 불이익 금지
+- 치료비는 가해학생 보호자 부담 원칙
+
+### 가해학생 조치 (제17조)
+1호: 서면사과, 2호: 접촉·보복금지, 3호: 학교봉사, 4호: 사회봉사, 5호: 특별교육·심리치료, 6호: 출석정지, 7호: 학급교체, 8호: 전학, 9호: 퇴학(고등학생만)
+- 1~3호: 졸업 시 학생부 자동 삭제
+- 4~9호: 졸업 후 2년 뒤 삭제 심의
+
+### 학교장 자체해결 (제13조의2)
+조건: 피해측이 심의 원하지 않음 + 2주 미만 치료 + 재산피해 없음 + 비지속적 + 비고의적
+→ 학생부 미기재
+
+### 분쟁조정 (제18조)
+- 양측 동의 필요, 1개월 이내 완료
+- 중립 조정자 참여, 합의서 작성
+
+### 행정심판 (제17조의2)
+- 조치 후 90일 이내 청구 가능
+- 무료, 법률구조공단(132) 도움 가능
+
+## 심리상담 가이드
+
+### 위기 대응
+- 자살/자해 언급 시: 즉시 1393, 1388 안내
+- 공황/극심한 불안: 호흡법, 그라운딩 기법 안내
+
+### 트라우마 대처
+- 정상적 반응임을 확인
+- 안전한 사람에게 이야기하기
+- 규칙적 생활 유지
+- 전문 상담 연계 (EMDR, CBT 등)
+
+### 자존감 회복
+- "당신 잘못이 아님" 강조
+- 작은 성취 기록, 자기 확인
+- 안전한 관계 형성
+- 자기표현 활동
+
+### 무료 상담 기관
+- Wee센터 (학교·교육지원청)
+- 청소년상담복지센터: 1388
+- 정신건강복지센터: 1577-0199
+- 해바라기센터 (성폭력)
+- 스마일센터 (범죄피해)
+
+## 응답 규칙
+1. HTML 태그를 사용하여 구조화된 답변을 제공합니다
+2. 관련 법 조항을 인용할 때는 <div class="law-ref">📋 근거: ...</div> 형식을 사용합니다
+3. 긴급 연락처는 <div class="crisis-box">...</div> 형식을 사용합니다
+4. 참고 정보는 <div class="info-box">💡 ...</div> 형식을 사용합니다
+5. 구분 제목은 <div class="section-title">...</div> 형식을 사용합니다
+6. 강조는 <strong>...</strong> 태그를 사용합니다
+7. 답변 마지막에 관련 추가 질문 3-4개를 JSON 배열로 제공합니다: <!-- quickReplies:["질문1","질문2","질문3"] -->`;
+
+// --- Intent Matching ---
+function matchIntent(input) {
+  const normalized = input.toLowerCase().replace(/\s+/g, ' ').trim();
+  let bestMatch = null;
+  let bestScore = 0;
+
+  for (const [key, data] of Object.entries(KNOWLEDGE_BASE)) {
+    let score = 0;
+    for (const keyword of data.keywords) {
+      if (normalized.includes(keyword)) {
+        score += keyword.length; // Longer keyword matches get higher score
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = { key, ...data };
+    }
+  }
+
+  return bestScore >= 2 ? bestMatch : null;
+}
+
+// --- Greeting Handler ---
+function getGreetingResponse(input) {
+  const normalized = input.toLowerCase();
+  if (['감사', '고마', '고맙', '땡큐'].some(k => normalized.includes(k))) {
+    return '도움이 되었다니 저도 기뻐요! 😊 더 궁금한 점이 있으면 언제든 물어봐 주세요.';
+  }
+  if (['잘가', '잘 가', '바이', 'bye'].some(k => normalized.includes(k))) {
+    return '네, 좋은 하루 보내세요! 💛 필요할 때 언제든 다시 찾아와 주세요.';
+  }
+  return '안녕하세요! 😊 저는 <strong>END NF 학교폭력 상담 챗봇</strong>이에요.\n\n학교폭력 관련 법률 상담이나 심리 상담이 필요하시면 편하게 말씀해 주세요. 어떤 이야기든 비밀이 보장됩니다. 💛';
+}
+
+// --- Fallback Response ---
+function getFallbackResponse() {
+  return `죄송해요, 질문을 정확히 이해하지 못했어요. 😅
+
+다음 주제들에 대해 도움을 드릴 수 있어요:
+
+<ul>
+<li>📖 학교폭력의 정의와 유형</li>
+<li>🆘 신고·대처 방법</li>
+<li>📋 사안처리 절차</li>
+<li>🤝 피해학생 보호·지원</li>
+<li>⚖️ 가해학생 조치</li>
+<li>💛 심리상담 안내</li>
+<li>📱 사이버폭력 대응</li>
+<li>📞 도움 기관 연락처</li>
+</ul>
+
+위 주제를 선택하시거나, 궁금한 점을 좀 더 구체적으로 말씀해 주세요!`;
+}
+const fallbackQuickReplies = ['학교폭력이란?', '신고 방법', '피해학생 지원', '심리상담 받기', '긴급 연락처'];
+
+// --- API Call ---
+async function callAI(message) {
+  const messages = chatHistory.slice(-CONFIG.maxHistory).map(m => ({
+    role: m.role, content: m.content
+  }));
+  messages.push({ role: 'user', content: message });
+
+  const endpoint = CONFIG.apiEndpoint || 'https://api.anthropic.com/v1/messages';
+  const headers = {
+    'Content-Type': 'application/json',
+    'anthropic-version': '2023-06-01'
+  };
+
+  if (CONFIG.apiEndpoint) {
+    // Using proxy - proxy handles API key
+    headers['x-api-key'] = 'proxy';
+  } else if (CONFIG.apiKey) {
+    headers['x-api-key'] = CONFIG.apiKey;
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  }
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5-20250514',
+      max_tokens: 1500,
+      system: SYSTEM_PROMPT,
+      messages
+    })
+  });
+
+  if (!response.ok) throw new Error(`API Error: ${response.status}`);
+  const data = await response.json();
+  return data.content[0].text;
+}
+
+// --- Chat UI ---
+function getTimeString() {
+  const now = new Date();
+  return now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function addMessage(content, sender, quickReplies) {
+  const chatArea = document.getElementById('chatArea');
+  const welcomeScreen = document.getElementById('welcomeScreen');
+  if (welcomeScreen) welcomeScreen.style.display = 'none';
+
+  const row = document.createElement('div');
+  row.className = `msg-row ${sender}`;
+
+  let html = '';
+  if (sender === 'bot') {
+    html += '<div class="bot-avatar">🛡️</div>';
+  }
+  html += `<div class="msg-bubble">${content}</div>`;
+  html += `<span class="msg-time">${getTimeString()}</span>`;
+  row.innerHTML = html;
+
+  const typingEl = document.getElementById('typingIndicator');
+  chatArea.insertBefore(row, typingEl);
+
+  // Add quick replies
+  if (quickReplies && quickReplies.length > 0 && sender === 'bot') {
+    const qrDiv = document.createElement('div');
+    qrDiv.className = 'quick-replies';
+    quickReplies.forEach(q => {
+      const btn = document.createElement('button');
+      btn.className = 'quick-btn';
+      btn.textContent = q;
+      btn.onclick = () => {
+        qrDiv.remove();
+        selectTopic(q);
+      };
+      qrDiv.appendChild(btn);
+    });
+    chatArea.insertBefore(qrDiv, typingEl);
+  }
+
+  // Store in history
+  chatHistory.push({ role: sender === 'user' ? 'user' : 'assistant', content: content.replace(/<[^>]*>/g, '') });
+
+  scrollToBottom();
+}
+
+function showTyping() {
+  document.getElementById('typingIndicator').classList.add('active');
+  scrollToBottom();
+}
+
+function hideTyping() {
+  document.getElementById('typingIndicator').classList.remove('active');
+}
+
+function scrollToBottom() {
+  const chatArea = document.getElementById('chatArea');
+  setTimeout(() => {
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }, 50);
+}
+
+// --- Send Message ---
+async function sendMessage(customText) {
+  const input = document.getElementById('userInput');
+  const text = (customText || input.value).trim();
+  if (!text || isProcessing) return;
+
+  if (!customText) {
+    input.value = '';
+    input.style.height = 'auto';
+  }
+
+  // Remove existing quick replies
+  document.querySelectorAll('.quick-replies').forEach(el => el.remove());
+
+  addMessage(text, 'user');
+  isProcessing = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  showTyping();
+
+  try {
+    // Check for crisis keywords first
+    const crisisMatch = matchIntent(text);
+    if (crisisMatch && crisisMatch.key === 'crisis') {
+      await delay(800);
+      hideTyping();
+      addMessage(crisisMatch.response, 'bot', crisisMatch.quickReplies);
+      return;
+    }
+
+    // Try AI if configured
+    if (CONFIG.mode === 'ai' && (CONFIG.apiEndpoint || CONFIG.apiKey)) {
+      try {
+        const aiResponse = await callAI(text);
+        hideTyping();
+        // Extract quick replies from AI response
+        const qrMatch = aiResponse.match(/<!-- quickReplies:(\[.*?\]) -->/);
+        let qr = ['학교폭력이란?', '신고 방법', '심리상담 받기'];
+        if (qrMatch) {
+          try { qr = JSON.parse(qrMatch[1]); } catch(e) {}
+        }
+        const cleanResponse = aiResponse.replace(/<!-- quickReplies:.*? -->/, '');
+        addMessage(cleanResponse, 'bot', qr);
+        return;
+      } catch (err) {
+        console.warn('AI API failed, falling back to rules:', err);
+      }
+    }
+
+    // Rule-based matching
+    await delay(600 + Math.random() * 400);
+    hideTyping();
+
+    const intent = matchIntent(text);
+    if (intent) {
+      if (intent.key === 'greeting') {
+        addMessage(getGreetingResponse(text), 'bot', ['학교폭력이란?', '신고 방법', '심리상담 받기']);
+      } else {
+        addMessage(intent.response, 'bot', intent.quickReplies);
+      }
+    } else {
+      addMessage(getFallbackResponse(), 'bot', fallbackQuickReplies);
+    }
+
+  } finally {
+    isProcessing = false;
+    document.getElementById('sendBtn').disabled = false;
+    input.focus();
+  }
+}
+
+function selectTopic(text) {
+  sendMessage(text);
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// --- Input Handlers ---
+function handleKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+// --- Settings ---
+function openSettings() {
+  document.getElementById('settingsModal').classList.add('active');
+  document.getElementById('aiMode').value = CONFIG.mode;
+  document.getElementById('apiEndpoint').value = CONFIG.apiEndpoint;
+  document.getElementById('apiKey').value = CONFIG.apiKey;
+  toggleApiFields();
+  updateStatusBadge();
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('active');
+}
+
+function toggleApiFields() {
+  const mode = document.getElementById('aiMode').value;
+  document.getElementById('apiFields').style.display = mode === 'ai' ? 'block' : 'none';
+}
+
+function updateStatusBadge() {
+  const el = document.getElementById('aiStatus');
+  if (CONFIG.mode === 'ai' && (CONFIG.apiEndpoint || CONFIG.apiKey)) {
+    el.innerHTML = '<span class="status-badge connected"><span class="status-dot"></span>AI 모드 활성화</span>';
+  } else {
+    el.innerHTML = '<span class="status-badge disconnected"><span class="status-dot"></span>규칙 기반 모드</span>';
+  }
+}
+
+function saveSettings() {
+  CONFIG.mode = document.getElementById('aiMode').value;
+  CONFIG.apiEndpoint = document.getElementById('apiEndpoint').value.trim();
+  CONFIG.apiKey = document.getElementById('apiKey').value.trim();
+
+  localStorage.setItem('endnf_mode', CONFIG.mode);
+  localStorage.setItem('endnf_endpoint', CONFIG.apiEndpoint);
+  localStorage.setItem('endnf_apikey', CONFIG.apiKey);
+
+  closeSettings();
+}
+
+// Close modal on overlay click
+document.getElementById('settingsModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSettings();
+});
+
+// Focus input on load
+window.addEventListener('load', () => {
+  document.getElementById('userInput').focus();
+});
+</script>
+</body>
+</html>
